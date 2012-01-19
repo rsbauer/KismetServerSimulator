@@ -29,7 +29,7 @@ server_loop($server, $port);
 /**
   * Change the identity to a non-priv user
   */
-function change_identity( $uid, $gid )
+function change_identity($uid, $gid)
 {
     if( !posix_setgid( $gid ) )
     {
@@ -144,7 +144,7 @@ function interact($socket)
 	$isRunning = true;
 	$networks = 0;
 	$starttime = time();
-	$endtime = $starttime + 120;
+	$endtime = $starttime + 1200;
 	$currtime = time();
 	$nettime = time();
 	$errorcode = '';
@@ -152,12 +152,6 @@ function interact($socket)
 	while(time() < $endtime && $errorcode == '' && $isRunning)
 	{
 		/* TALK TO YOUR CLIENT */
-//		$input = trim(socket_read($socket, 1024));
-
-//		$isRunning = process_command($socket, $input);
-		
-		//outputNetworkInfo($socket);
-		//$networks++;
 				
 		if(time() > $currtime + 5)
 		{
@@ -165,15 +159,14 @@ function interact($socket)
 			$currtime = time();
 		}
 		
-		if(time() > $nettime + 3)
-		{
-			outputNetworkInfo($socket);
+//		if(time() > $nettime + 3)
+//		{
+			outputNetworkInfo($socket, $networks);
 			$networks++;
 			$nettime = time();
-		}
+//		}
 		
 		$errorcode = socket_last_error($socket);
-		
 	}
 }
 
@@ -225,10 +218,24 @@ function showWelcome($socket)
 *PROTOCOLS: KISMET,ERROR,ACK,PROTOCOLS,CAPABILITY,TERMINATE,TIME,ALERT,NETWORK,CLIENT,GPS,INFO,REMOVE,STATUS,PACKET,STRING,WEPKEY,CARD' . "\n");
 }
 
-function outputNetworkInfo($socket)
+function outputNetworkInfo($socket, $networks)
 {
-	$network = '*NETWORK: 00:26:B0:0F:E6:2F 0.0.0.0 0 2 11.0 0 979.770020 -81.571976 41.404366 979.770020 0.000000 41.404499 -81.571899 1018.049988 0.000000 WAP Demo' . "\n";
+	$network = '*NETWORK: ' . generateMACAddress() . ' 0.0.0.0 0 2 11.0 0 979.770020 -81.571976 41.404366 979.770020 0.000000 41.404499 -81.571899 1018.049988 0.000000 WAP Demo ' . $networks . "\n";
+    echo $network . "\n";
 	@socket_write($socket, $network);
+}
+
+function generateMACAddress()
+{
+    $mac = '';
+    for($a = 0; $a < 6; $a++) 
+    {
+        if($a > 0)
+            $mac .= ':';
+        $mac .= sprintf('%02d', rand(0, 255));
+    }
+
+    return $mac;
 }
  
 ?>
